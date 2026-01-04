@@ -139,10 +139,11 @@ struct Options {
   bool no_pruning = false;  // Disable fast/slow tricks pruning for debugging
   bool no_tt = false;       // Disable transposition table for debugging
   bool no_rank_skip = false; // Disable min_relevant_ranks optimization for debugging
+  bool show_perf = false;   // Show [PERF] lines after each solve
 
   void Read(int argc, char* argv[]) {
     int c;
-    while ((c = getopt(argc, argv, "c:df:im:oprs:t:D:G:PRS:TX:")) != -1) {
+    while ((c = getopt(argc, argv, "c:df:im:oprs:t:D:G:PRS:TVX:")) != -1) {
       switch (c) {
         // clang-format off
         case 'c': code = optarg; break;
@@ -161,6 +162,7 @@ struct Options {
         case 'R': no_rank_skip = true; break;
         case 'S': stats_level = atoi(optarg); break;
         case 'T': no_tt = true; break;
+        case 'V': show_perf = true; break;
         case 'X': xray_iterations = atoi(optarg); break;
           // clang-format on
       }
@@ -1028,6 +1030,14 @@ class Play {
   typedef std::pair<int, Cards> Result;  // NS tricks and rank winners
 
   Result SearchWithCache(int beta) {
+    // XRAY counter - increment on EVERY recursive call (not just trick boundaries)
+    if (options.xray_iterations > 0) {
+      ++xray_counter;
+      if (xray_counter == options.xray_iterations + 1) {
+        fprintf(stderr, "XRAY_LIMIT_REACHED: %d iterations\n", options.xray_iterations);
+      }
+    }
+
     if (!TrickStarting()) {
       ns_tricks_won = PreviousPlay().ns_tricks_won;
       seat_to_play = PreviousPlay().NextSeat();
@@ -1039,9 +1049,8 @@ class Play {
       seat_to_play = PreviousPlay().WinningSeat();
     }
 
-    // X-ray tracing
-    if (options.xray_iterations > 0 && xray_counter < options.xray_iterations) {
-      ++xray_counter;
+    // X-ray detailed logging (at trick boundaries only, for readability)
+    if (options.xray_iterations > 0 && xray_counter <= options.xray_iterations) {
       fprintf(stderr, "XRAY %d: depth=%d seat=%s beta=%d ns_tricks_won=%d\n",
               xray_counter, depth, SeatName(seat_to_play), beta, ns_tricks_won);
       fprintf(stderr, "HANDS: W=%llx N=%llx E=%llx S=%llx\n",
@@ -1199,10 +1208,9 @@ class Play {
       playable_cards.Remove(cutoff_cards);
     } else {
       OrderCards(playable_cards);
-      playable_cards = Cards();
     }
 
-    // MOVE_ORDER logging AFTER update
+    // MOVE_ORDER logging AFTER update (before clearing playable_cards)
     if (options.xray_iterations > 0 && xray_counter <= options.xray_iterations) {
       fprintf(stderr, "MOVE_ORDER_AFTER: iter=%lld depth=%d ordered=[", g_iteration_count, depth);
       for (int i = 0; i < ordered_cards.Size(); ++i) {
@@ -1217,6 +1225,11 @@ class Play {
         fprintf(stderr, "%s", NameOf(card));
       }
       fprintf(stderr, "]\n");
+    }
+
+    // Clear playable_cards after logging (was being cleared before logging, causing empty remaining=[])
+    if (!cutoff_cards) {
+      playable_cards = Cards();
     }
 
     // ORDERED logging
@@ -1975,9 +1988,11 @@ void Solve(const Hands& hands, const std::vector<int>& trumps,
       auto search = [&min_max](int beta) { return min_max.Search(beta); };
       int ns_tricks = MemoryEnhancedTestDriver(search, num_tricks, guess_tricks);
       double solve_time = Now() - solve_start;
-      double ns_per_iter = (g_iteration_count > 0) ? (solve_time * 1e9 / g_iteration_count) : 0;
-      fprintf(stderr, "[PERF] iterations=%lld, time=%.3fs, ns/iter=%.1f\n",
-              g_iteration_count, solve_time, ns_per_iter);
+      if (options.show_perf) {
+        double ns_per_iter = (g_iteration_count > 0) ? (solve_time * 1e9 / g_iteration_count) : 0;
+        fprintf(stderr, "[PERF] iterations=%lld, time=%.3fs, ns/iter=%.1f\n",
+                g_iteration_count, solve_time, ns_per_iter);
+      }
       guess_tricks = std::min(ns_tricks + 1, TOTAL_TRICKS);
       if (options.stats_level) {
         common_bounds_cache.ShowStatistics();
