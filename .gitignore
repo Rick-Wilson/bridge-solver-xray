@@ -26,3 +26,16 @@
 *.exe
 *.out
 *.app
+solver-xray
+solver
+solver.p
+solver.g
+solver.m
+*.gcda
+
+# macOS
+.DS_Store
+
+# Editor
+*.swp
+*~

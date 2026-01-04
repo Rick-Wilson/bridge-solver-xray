@@ -1,0 +1,36 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build-macos:
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build solver-xray
+      run: |
+        g++ -std=c++17 -O3 -o solver-xray bridge-solver.cc
+
+    - name: Run tests
+      run: |
+        chmod +x run_solver_tests.sh
+        ./run_solver_tests.sh
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Build solver-xray
+      run: |
+        g++ -std=c++17 -O3 -o solver-xray bridge-solver.cc
+
+    - name: Run tests
+      run: |
+        chmod +x run_solver_tests.sh
+        ./run_solver_tests.sh

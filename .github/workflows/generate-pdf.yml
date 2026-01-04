@@ -1,0 +1,36 @@
+name: Generate PDF
+
+on:
+  push:
+    branches: [ master, main ]
+    paths:
+      - 'README.md'
+
+jobs:
+  generate-pdf:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install pandoc and LaTeX
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y pandoc texlive-latex-base texlive-fonts-recommended texlive-latex-extra
+
+    - name: Generate PDF from README
+      run: |
+        pandoc README.md -o README.pdf --pdf-engine=pdflatex
+
+    - name: Upload PDF artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: readme-pdf
+        path: README.pdf
+
+    - name: Commit PDF to repository
+      run: |
+        git config --local user.email "github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add README.pdf
+        git diff --staged --quiet || git commit -m "Update README.pdf"
+        git push
