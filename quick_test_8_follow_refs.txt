@@ -1,0 +1,310 @@
+// Reference follow ordering from C++ implementation
+// Deal: quick_test_8
+// North: AKQ J6 KJ 9
+// West:  65 AK4 AQ T
+// East:  J7 QT9 T AK
+// South: 98 87 96 QJ
+
+// Test: west_leads_S6_east_follows_2nd_nt
+// Leader: West, Lead: S6, Follower: East (pos 1), Winner: West with S6, Trump: NT
+// East follows with: SJ S7
+
+// Test: west_leads_HA_east_follows_2nd_nt
+// Leader: West, Lead: HA, Follower: East (pos 1), Winner: West with HA, Trump: NT
+// East follows with: H9 HT HQ
+
+// Test: north_leads_SA_east_follows_2nd_nt
+// Leader: North, Lead: SA, Follower: East (pos 1), Winner: North with SA, Trump: NT
+// East follows with: S7 SJ
+
+// Test: west_leads_DA_south_follows_4th_nt
+// Leader: West, Lead: DA, Follower: South (pos 3), Winner: North with DK, Trump: NT
+// South follows with: D6 D9
+
+// Test: west_leads_CT_east_follows_2nd_nt
+// Leader: West, Lead: CT, Follower: East (pos 1), Winner: West with CT, Trump: NT
+// East follows with: CK CA
+
+// Test: north_leads_HJ_east_follows_2nd_nt
+// Leader: North, Lead: HJ, Follower: East (pos 1), Winner: North with HJ, Trump: NT
+// East follows with: H9 HT HQ
+
+// Test: west_leads_HK_north_follows_2nd_nt
+// Leader: West, Lead: HK, Follower: North (pos 1), Winner: West with HK, Trump: NT
+// North follows with: H6 HJ
+
+// Test: west_leads_S5_south_follows_4th_pd_wins_nt
+// Leader: West, Lead: S5, Follower: South (pos 3), Winner: East with SJ, Trump: NT
+// South follows with: S8 S9
+
+// Test: west_leads_CT_north_ruffs_hearts
+// Leader: West, Lead: CT, Follower: North (pos 1), Winner: West with CT, Trump: Hearts
+// North follows with: C9
+
+// Test: west_leads_S6_south_follows_spades
+// Leader: West, Lead: S6, Follower: South (pos 1), Winner: West with S6, Trump: Spades
+// South follows with: S8 S9
+
+// Test: north_leads_DK_east_ruffs_hearts
+// Leader: North, Lead: DK, Follower: East (pos 1), Winner: North with DK, Trump: Hearts
+// East follows with: DT
+
+// Test: west_leads_S6_south_follows_3rd_nt
+// Leader: West, Lead: S6, Follower: South (pos 2), Winner: North with SA, Trump: NT
+// South follows with: S8 S9
+
+
+// ============== Rust test functions ==============
+
+#[test]
+fn test_follow_west_leads_S6_east_follows_2nd_nt() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = S;
+    let playable = hands[EAST].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[EAST] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        EAST,
+        NOTRUMP,
+        S,  // lead_suit
+        WEST,  // winning_seat
+        card_of(S, 4),  // winning_card: S6
+        1,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, NOTRUMP),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "SJ S7");
+}
+
+#[test]
+fn test_follow_west_leads_HA_east_follows_2nd_nt() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = H;
+    let playable = hands[EAST].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[EAST] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        EAST,
+        NOTRUMP,
+        H,  // lead_suit
+        WEST,  // winning_seat
+        card_of(H, 12),  // winning_card: HA
+        1,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, NOTRUMP),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "H9 HT HQ");
+}
+
+#[test]
+fn test_follow_north_leads_SA_east_follows_2nd_nt() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = S;
+    let playable = hands[EAST].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[EAST] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        EAST,
+        NOTRUMP,
+        S,  // lead_suit
+        NORTH,  // winning_seat
+        card_of(S, 12),  // winning_card: SA
+        1,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, NOTRUMP),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "S7 SJ");
+}
+
+#[test]
+fn test_follow_west_leads_DA_south_follows_4th_nt() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = D;
+    let playable = hands[SOUTH].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[SOUTH] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        SOUTH,
+        NOTRUMP,
+        D,  // lead_suit
+        NORTH,  // winning_seat
+        card_of(D, 11),  // winning_card: DK
+        3,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, NOTRUMP),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "D6 D9");
+}
+
+#[test]
+fn test_follow_west_leads_CT_east_follows_2nd_nt() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = C;
+    let playable = hands[EAST].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[EAST] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        EAST,
+        NOTRUMP,
+        C,  // lead_suit
+        WEST,  // winning_seat
+        card_of(C, 8),  // winning_card: CT
+        1,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, NOTRUMP),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "CK CA");
+}
+
+#[test]
+fn test_follow_north_leads_HJ_east_follows_2nd_nt() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = H;
+    let playable = hands[EAST].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[EAST] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        EAST,
+        NOTRUMP,
+        H,  // lead_suit
+        NORTH,  // winning_seat
+        card_of(H, 9),  // winning_card: HJ
+        1,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, NOTRUMP),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "H9 HT HQ");
+}
+
+#[test]
+fn test_follow_west_leads_HK_north_follows_2nd_nt() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = H;
+    let playable = hands[NORTH].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[NORTH] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        NORTH,
+        NOTRUMP,
+        H,  // lead_suit
+        WEST,  // winning_seat
+        card_of(H, 11),  // winning_card: HK
+        1,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, NOTRUMP),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "H6 HJ");
+}
+
+#[test]
+fn test_follow_west_leads_S5_south_follows_4th_pd_wins_nt() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = S;
+    let playable = hands[SOUTH].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[SOUTH] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        SOUTH,
+        NOTRUMP,
+        S,  // lead_suit
+        EAST,  // winning_seat
+        card_of(S, 9),  // winning_card: SJ
+        3,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, NOTRUMP),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "S8 S9");
+}
+
+#[test]
+fn test_follow_west_leads_CT_north_ruffs_hearts() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = C;
+    let playable = hands[NORTH].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[NORTH] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        NORTH,
+        HEART,
+        C,  // lead_suit
+        WEST,  // winning_seat
+        card_of(C, 8),  // winning_card: CT
+        1,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, HEART),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "C9");
+}
+
+#[test]
+fn test_follow_west_leads_S6_south_follows_spades() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = S;
+    let playable = hands[SOUTH].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[SOUTH] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        SOUTH,
+        SPADE,
+        S,  // lead_suit
+        WEST,  // winning_seat
+        card_of(S, 4),  // winning_card: S6
+        1,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, SPADE),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "S8 S9");
+}
+
+#[test]
+fn test_follow_north_leads_DK_east_ruffs_hearts() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = D;
+    let playable = hands[EAST].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[EAST] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        EAST,
+        HEART,
+        D,  // lead_suit
+        NORTH,  // winning_seat
+        card_of(D, 11),  // winning_card: DK
+        1,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, HEART),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "DT");
+}
+
+#[test]
+fn test_follow_west_leads_S6_south_follows_3rd_nt() {
+    let hands = get_quick_test_8_hands();
+    let lead_suit = S;
+    let playable = hands[SOUTH].suit(lead_suit);
+    let playable = if playable.is_empty() { hands[SOUTH] } else { playable };
+    let ordered = order_follows(
+        playable,
+        &hands,
+        SOUTH,
+        NOTRUMP,
+        S,  // lead_suit
+        NORTH,  // winning_seat
+        card_of(S, 12),  // winning_card: SA
+        2,  // card_in_trick
+        |c1, c2| wins_over(c1, c2, NOTRUMP),
+    );
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "S8 S9");
+}
+

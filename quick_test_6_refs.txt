@@ -1,0 +1,220 @@
+// Reference lead ordering from C++ implementation
+// Deal: quick_test_6
+// North: KQ J6 KJ
+// West:  5 K4 AQ T
+// East:  J7 QT9  K
+// South: 98 87 96
+
+// Trump: NT
+// West leads: HK H4 DA DQ S5 CT
+// North leads: SK SQ HJ H6 DK DJ
+// East leads: HQ H9 SJ S7 CK HT
+// South leads: D9 D6 S9 S8 H8 H7
+
+// Trump: Spades
+// West leads: HK H4 DA DQ S5 CT
+// North leads: HJ H6 SK SQ DK DJ
+// East leads: HQ H9 SJ S7 HT CK
+// South leads: H8 H7 S9 S8 D9 D6
+
+// Trump: Hearts
+// West leads: DA DQ S5 HK H4 CT
+// North leads: SK SQ HJ H6 DK DJ
+// East leads: SJ S7 HQ H9 HT CK
+// South leads: S9 S8 H8 H7 D9 D6
+
+// Trump: Diamonds
+// West leads: HK H4 S5 DA DQ CT
+// North leads: SK SQ HJ H6 DK DJ
+// East leads: HQ H9 SJ S7 HT CK
+// South leads: S9 S8 H8 H7 D9 D6
+
+// Trump: Clubs
+// West leads: HK H4 DA DQ S5 CT
+// North leads: SK SQ HJ H6 DK DJ
+// East leads: HQ H9 SJ S7 CK HT
+// South leads: S9 S8 H8 H7 D9 D6
+
+
+// ============== Rust test functions ==============
+
+#[test]
+fn test_quick_test_6_nt_west_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[WEST], &hands, WEST, NOTRUMP, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "HK H4 DA DQ S5 CT");
+}
+
+#[test]
+fn test_quick_test_6_nt_north_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[NORTH], &hands, NORTH, NOTRUMP, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "SK SQ HJ H6 DK DJ");
+}
+
+#[test]
+fn test_quick_test_6_nt_east_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[EAST], &hands, EAST, NOTRUMP, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "HQ H9 SJ S7 CK HT");
+}
+
+#[test]
+fn test_quick_test_6_nt_south_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[SOUTH], &hands, SOUTH, NOTRUMP, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "D9 D6 S9 S8 H8 H7");
+}
+
+#[test]
+fn test_quick_test_6_spades_west_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[WEST], &hands, WEST, SPADE, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "HK H4 DA DQ S5 CT");
+}
+
+#[test]
+fn test_quick_test_6_spades_north_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[NORTH], &hands, NORTH, SPADE, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "HJ H6 SK SQ DK DJ");
+}
+
+#[test]
+fn test_quick_test_6_spades_east_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[EAST], &hands, EAST, SPADE, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "HQ H9 SJ S7 HT CK");
+}
+
+#[test]
+fn test_quick_test_6_spades_south_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[SOUTH], &hands, SOUTH, SPADE, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "H8 H7 S9 S8 D9 D6");
+}
+
+#[test]
+fn test_quick_test_6_hearts_west_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[WEST], &hands, WEST, HEART, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "DA DQ S5 HK H4 CT");
+}
+
+#[test]
+fn test_quick_test_6_hearts_north_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[NORTH], &hands, NORTH, HEART, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "SK SQ HJ H6 DK DJ");
+}
+
+#[test]
+fn test_quick_test_6_hearts_east_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[EAST], &hands, EAST, HEART, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "SJ S7 HQ H9 HT CK");
+}
+
+#[test]
+fn test_quick_test_6_hearts_south_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[SOUTH], &hands, SOUTH, HEART, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "S9 S8 H8 H7 D9 D6");
+}
+
+#[test]
+fn test_quick_test_6_diamonds_west_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[WEST], &hands, WEST, DIAMOND, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "HK H4 S5 DA DQ CT");
+}
+
+#[test]
+fn test_quick_test_6_diamonds_north_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[NORTH], &hands, NORTH, DIAMOND, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "SK SQ HJ H6 DK DJ");
+}
+
+#[test]
+fn test_quick_test_6_diamonds_east_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[EAST], &hands, EAST, DIAMOND, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "HQ H9 SJ S7 HT CK");
+}
+
+#[test]
+fn test_quick_test_6_diamonds_south_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[SOUTH], &hands, SOUTH, DIAMOND, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "S9 S8 H8 H7 D9 D6");
+}
+
+#[test]
+fn test_quick_test_6_clubs_west_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[WEST], &hands, WEST, CLUB, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "HK H4 DA DQ S5 CT");
+}
+
+#[test]
+fn test_quick_test_6_clubs_north_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[NORTH], &hands, NORTH, CLUB, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "SK SQ HJ H6 DK DJ");
+}
+
+#[test]
+fn test_quick_test_6_clubs_east_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[EAST], &hands, EAST, CLUB, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "HQ H9 SJ S7 CK HT");
+}
+
+#[test]
+fn test_quick_test_6_clubs_south_leads() {
+    let hands = get_quick_test_6_hands();
+    let all_cards = hands.all_cards();
+    let ordered = order_leads(hands[SOUTH], &hands, SOUTH, CLUB, all_cards);
+    let result = ordered_to_string(ordered.iter());
+    assert_eq!(result, "S9 S8 H8 H7 D9 D6");
+}
+

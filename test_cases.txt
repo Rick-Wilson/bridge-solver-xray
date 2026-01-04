@@ -1,0 +1,35 @@
+# Test cases for bridge double-dummy solver
+# Format: N_hand|W_hand|E_hand|S_hand|trump|leader|expected_ns_tricks
+# Hands are in SHDC order, separated by dots
+# Trump: N=NoTrump, S=Spades, H=Hearts, D=Diamonds, C=Clubs
+# All hands must have exactly 13 cards
+
+# Test 1: From PBN file - NS makes 9 in NT with West leading
+AKQT3.J6.KJ42.95|98.873.9653.QJ72|652.AK42.AQ87.T4|J74.QT95.T.AK863|N|W|9
+
+# Test 2: Same deal - check East lead
+AKQT3.J6.KJ42.95|98.873.9653.QJ72|652.AK42.AQ87.T4|J74.QT95.T.AK863|N|E|9
+
+# Test 3: Same deal - North leads (NS makes 13-4=9 when N/S lead)
+AKQT3.J6.KJ42.95|98.873.9653.QJ72|652.AK42.AQ87.T4|J74.QT95.T.AK863|N|N|9
+
+# Test 4: Same deal in Spades with West lead
+AKQT3.J6.KJ42.95|98.873.9653.QJ72|652.AK42.AQ87.T4|J74.QT95.T.AK863|S|W|10
+
+# Test 5: Same deal in Hearts with West lead
+AKQT3.J6.KJ42.95|98.873.9653.QJ72|652.AK42.AQ87.T4|J74.QT95.T.AK863|H|W|8
+
+# Test 6: Same deal in Diamonds with West lead
+AKQT3.J6.KJ42.95|98.873.9653.QJ72|652.AK42.AQ87.T4|J74.QT95.T.AK863|D|W|7
+
+# Test 7: Same deal in Clubs with West lead
+AKQT3.J6.KJ42.95|98.873.9653.QJ72|652.AK42.AQ87.T4|J74.QT95.T.AK863|C|W|8
+
+# Test 8: Cold 7NT - NS has all top cards
+AKQJ.AKQ.AKQ.AKQ|T987.JT9.JT9.JT9|6543.876.876.876|2.5432.5432.5432|N|W|13
+
+# Test 9: EW has all top cards - NS makes 0
+T987.JT9.JT9.JT9|AKQJ.AKQ.AKQ.AKQ|2.5432.5432.5432|6543.876.876.876|N|W|0
+
+# Test 10: Balanced hands - NS makes 10 (verified by solver)
+AK32.AK32.K32.32|QJT9.QJT.QJT.QJT|8765.987.987.987|4.654.A654.AK654|N|W|10
