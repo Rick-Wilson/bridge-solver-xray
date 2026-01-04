@@ -39,3 +39,6 @@ solver.m
 # Editor
 *.swp
 *~
+
+# Test results
+results.*
