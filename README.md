@@ -10,9 +10,15 @@ This repository maintains an instrumented ("X-ray") version of the bridge double
 - **Validation**: Verify that modified or reimplemented solvers produce identical results to the reference implementation
 - **Understanding**: Study the solver's decision-making process for educational purposes
 
+## Repository Structure
+
+- **Root**: Original upstream solver files (unmodified)
+- **xray/**: Instrumented solver, tests, and build files
+
 ## Building
 
 ```bash
+cd xray
 make
 ```
 
@@ -21,6 +27,7 @@ This builds `solver-xray` from `bridge-solver.cc`.
 ## Running Tests
 
 ```bash
+cd xray
 make test
 ```
 
@@ -40,6 +47,7 @@ The instrumented solver supports additional command-line options:
 ### Example: Trace first 10 search calls
 
 ```bash
+cd xray
 ./solver-xray -f test_deals/deal.1 -X 10
 ```
 
@@ -73,6 +81,7 @@ game of bridge. It's terminal based.
 
 ## Solve a random deal
 ```
+cd xray
 ./solver-xray -r
 ```
 The output looks like below.
@@ -93,6 +102,7 @@ memory usage.
 ## Solve a deal in a file
 
 ```
+cd xray
 ./solver-xray -f FILE
 ```
 
@@ -112,6 +122,7 @@ all five strains.
 
 ## Interactive play
 ```
+cd xray
 ./solver-xray -r -p
 ```
 or
