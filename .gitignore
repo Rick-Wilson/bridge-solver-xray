@@ -31,6 +31,9 @@ solver
 solver.p
 solver.g
 solver.m
+gen_follow_order_refs
+gen_lead_order_refs
+gen_slow_trump_tricks_refs
 *.gcda
 
 # macOS
