@@ -1092,10 +1092,21 @@ class Play {
           int lower = bounds.lower + ns_tricks_won;
           if (lower >= beta) {
             VERBOSE(printf("%2d: beta cut %d\n", depth, lower));
+            if (options.xray_iterations > 0 && xray_counter <= options.xray_iterations) {
+              fprintf(stderr, "PATTERN_HIT: depth=%d seat=%d beta=%d ns_tricks_won=%d bounds=[%d,%d] adj_lower=%d LOWER_CUT shape=%llx hands=[%llx,%llx,%llx,%llx]\n",
+                      depth, seat_to_play, beta, ns_tricks_won, bounds.lower, bounds.upper, lower,
+                      trick->shape.Value(),
+                      (*hands)[WEST].Value(), (*hands)[NORTH].Value(),
+                      (*hands)[EAST].Value(), (*hands)[SOUTH].Value());
+            }
             return {lower, rank_winners};
           }
           int upper = bounds.upper + ns_tricks_won;
           VERBOSE(printf("%2d: alpha cut %d\n", depth, upper));
+          if (options.xray_iterations > 0 && xray_counter <= options.xray_iterations) {
+            fprintf(stderr, "PATTERN_HIT: depth=%d seat=%d beta=%d ns_tricks_won=%d bounds=[%d,%d] adj_upper=%d UPPER_CUT\n",
+                    depth, seat_to_play, beta, ns_tricks_won, bounds.lower, bounds.upper, upper);
+          }
           return {upper, rank_winners};
         }
       }
@@ -1110,6 +1121,14 @@ class Play {
 
       auto [pattern_hands, extended_rank_winners] = trick->ComputePatternHands(rank_winners);
       Pattern new_pattern(pattern_hands, bounds);
+      if (options.xray_iterations > 0 && xray_counter <= options.xray_iterations) {
+        fprintf(stderr, "PATTERN_STORE: depth=%d seat=%d beta=%d ns_tricks_won=%d result=%d bounds=[%d,%d] shape=%llx hands=[%llx,%llx,%llx,%llx] rank_winners=%llx\n",
+                depth, seat_to_play, beta, ns_tricks_won, ns_tricks,
+                bounds.lower, bounds.upper, trick->shape.Value(),
+                pattern_hands[WEST].Value(), pattern_hands[NORTH].Value(),
+                pattern_hands[EAST].Value(), pattern_hands[SOUTH].Value(),
+                rank_winners.Value());
+      }
       VERBOSE(ShowPattern("update", new_pattern, trick->shape));
       auto* new_shape_entry = common_bounds_cache.Update(shape_index);
 #ifdef _DEBUG
@@ -1174,9 +1193,22 @@ class Play {
     ordered_cards.Reset();
     auto playable_cards = GetPlayableCards();
     auto original_playable = playable_cards;  // Save for logging
+
+    // PLAYABLE logging (before cutoff index)
+    if (options.xray_iterations > 0 && xray_counter <= options.xray_iterations) {
+      fprintf(stderr, "PLAYABLE: depth=%d seat=%d count=%d cards=%llx\n",
+              depth, seat_to_play, playable_cards.Size(), playable_cards.Value());
+    }
+
     Cards cutoff_index[2];
     BuildCutoffIndex(cutoff_index);
     Cards cutoff_cards = playable_cards.Intersect(LookupCutoffCards(cutoff_index));
+
+    // CUTOFF_INDEX logging
+    if (options.xray_iterations > 0 && xray_counter <= options.xray_iterations) {
+      fprintf(stderr, "CUTOFF_INDEX: iter=%lld depth=%d key0=%llx key1=%llx seat=%d\n",
+              g_iteration_count, depth, cutoff_index[0].Value(), cutoff_index[1].Value(), seat_to_play);
+    }
 
     // MOVE_ORDER logging BEFORE update
     if (options.xray_iterations > 0 && xray_counter <= options.xray_iterations) {
@@ -1264,13 +1296,15 @@ class Play {
                                : std::min(ns_tricks, branch_ns_tricks);
         // SCORE logging
         if (options.xray_iterations > 0 && xray_counter <= options.xray_iterations) {
-          fprintf(stderr, "SCORE: depth=%d card=%s score=%d best=%d beta=%d maximizing=%s play=[",
+          fprintf(stderr, "SCORE: depth=%d card=%s score=%d best=%d beta=%d maximizing=%s rank_winners=%llx play=[",
                   depth, NameOf(card),
                   branch_ns_tricks, old_ns_tricks, beta,
-                  NsToPlay() ? "true" : "false");
+                  NsToPlay() ? "true" : "false",
+                  branch_rank_winners.Value());
           for (int d = 0; d < depth; ++d) {
             if (d > 0 && (d & 3) == 0) fprintf(stderr, " |");
-            fprintf(stderr, " %s", NameOf(plays[d].card_played));
+            if (d > 0) fprintf(stderr, " ");
+            fprintf(stderr, "%s", NameOf(plays[d].card_played));
           }
           fprintf(stderr, "]\n");
         }
@@ -1284,7 +1318,8 @@ class Play {
                     NsToPlay() ? "true" : "false");
             for (int d = 0; d < depth; ++d) {
               if (d > 0 && (d & 3) == 0) fprintf(stderr, " |");
-              fprintf(stderr, " %s", NameOf(plays[d].card_played));
+              if (d > 0) fprintf(stderr, " ");
+              fprintf(stderr, "%s", NameOf(plays[d].card_played));
             }
             fprintf(stderr, "]\n");
           }
@@ -1307,7 +1342,8 @@ class Play {
                   suit_rank_winners ? NameOf(suit_rank_winners.Bottom()) : "none");
           for (int d = 0; d < depth; ++d) {
             if (d > 0 && (d & 3) == 0) fprintf(stderr, " |");
-            fprintf(stderr, " %s", NameOf(plays[d].card_played));
+            if (d > 0) fprintf(stderr, " ");
+            fprintf(stderr, "%s", NameOf(plays[d].card_played));
           }
           fprintf(stderr, "]\n");
         }
@@ -1708,7 +1744,13 @@ class Play {
       rank_winners.Add(pd_rank_winners);
     } else
       fast_tricks = my_tricks;
-    return {std::min(trump_tricks + fast_tricks, my_hand.Size()), rank_winners};
+    int raw = trump_tricks + fast_tricks;
+    int capped = std::min(raw, my_hand.Size());
+    if (options.xray_iterations > 0 && xray_counter <= options.xray_iterations) {
+      fprintf(stderr, "FAST_TRICKS: depth=%d seat=%d raw=%d capped=%d trump=%d\n",
+              depth, seat_to_play, raw, capped, trump);
+    }
+    return {capped, rank_winners};
   }
 
   int SuitFastTricks(Cards my_suit, int my_winners, bool& my_entry, Cards pd_suit,
