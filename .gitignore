@@ -45,3 +45,4 @@ gen_slow_trump_tricks_refs
 
 # Test results
 results.*
+activity-log.json
